@@ -15,6 +15,10 @@
     color: inherit;
 }
 
+	.nav-bar > a:hover {
+		background-color: ghostwhite;
+	}
+
 td {
     padding: 10px;
 }

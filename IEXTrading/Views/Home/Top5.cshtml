@@ -1,27 +1,40 @@
 ﻿@model List<IEXTrading.Models.CompanyDetails>
 @{
-    ViewData["Title"] = "Top5";
+	ViewData["Title"] = "Top5";
 }
 
 <h2>Top5</h2>
+<table class="table">
+	<thead>
+		<tr>
+			<th>
+				Symbol
+			</th>
+			<th>
+				Name
+			</th>
+				
+		</tr>
+	</thead>
 
-@if (Model != null)
-{
-    <div>
-        <p>
-            Symbol  Company Name
-        </p>
-    </div>
-    <br />
-    @foreach (var item in Model)
-    {
-        <div>
-            <p>
-                @item.symbol  @item.companyName
-            </p>
-            
-        </div>
-    }
-}
+	<tbody>
 
+		@if (Model != null)
+		{
+			
+			@foreach (var item in Model)
+			{
+		<tr>
+			<td>
+				@item.symbol
+			</td>
+			<td>
+				@item.companyName
+			</td>
 
+		</tr>				
+			
+			}
+		}
+</tbody>
+</table>
