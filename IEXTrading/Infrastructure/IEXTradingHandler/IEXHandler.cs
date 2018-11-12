@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using IEXTrading.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace IEXTrading.Infrastructure.IEXTradingHandler
 {
@@ -76,6 +77,112 @@ namespace IEXTrading.Infrastructure.IEXTradingHandler
             }
 
             return Equities;
+        }
+
+        public List<Dividend> GetDividends(string symbol)
+        {
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/dividends/1y";
+            string dividendsList = "";
+
+            List<Dividend> _listDividend = null;
+
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                dividendsList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            if (!dividendsList.Equals(""))
+            {
+                _listDividend = JsonConvert.DeserializeObject<List<Dividend>>(dividendsList);
+                //_listDividend = _listDividend.GetRange(0, 9);
+            }
+
+            return _listDividend;
+        }
+
+        public CompanyDetails GetAll(string symbol)
+        {
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/stats";
+            string _list = "";
+
+            CompanyDetails _all = new CompanyDetails();
+
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                _list = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            var jsonObject = (JObject)JsonConvert.DeserializeObject(_list);
+            _all.revenuePerShare = (jsonObject.Property("revenuePerShare").Value.ToString().Length==0) ? 0 : Convert.ToDecimal(jsonObject.Property("revenuePerShare").Value.ToString());
+            _all.returnOnEquity = (jsonObject.Property("returnOnEquity").Value.ToString().Length==0) ? 0 : Convert.ToDecimal(jsonObject.Property("returnOnEquity").Value.ToString());
+            
+            _all.latestEPS = (jsonObject.Property("latestEPS").Value.ToString().Length == 0) ? 0 : Convert.ToDecimal(jsonObject.Property("latestEPS").Value.ToString());
+            _all.companyName = (jsonObject.Property("companyName").Value.ToString().Length == 0) ? "" : jsonObject.Property("companyName").Value.ToString();
+            _all.symbol = symbol;
+
+            return _all;
+
+        }
+
+        public decimal GetLatestPrice(string symbol)
+        {
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/price";
+            string EPSList = "";
+
+            decimal latestPrice=0;
+
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                EPSList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            if (!EPSList.Equals(""))
+            {
+                latestPrice = JsonConvert.DeserializeObject<decimal>(EPSList);
+            }
+
+            return latestPrice;
+
+        }
+
+        public List<EPS> GetEPS(string symbol)
+        {
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/earnings";
+            string EPSList = "";
+
+            List<EPS> _listEPS = null;
+
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                EPSList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            var jsonObject = (JObject)JsonConvert.DeserializeObject(EPSList);
+            var unashamedohio = (JArray)(jsonObject.Property("earnings").Value);
+
+
+            List<EPS> listEPS = unashamedohio.ToObject<List<EPS>>();
+
+            if (!EPSList.Equals(""))
+            {
+                _listEPS = JsonConvert.DeserializeObject<List<EPS>>(EPSList);
+                //_listDividend = _listDividend.GetRange(0, 9);
+            }
+
+            return _listEPS;
+        }
+
+        public void GetData(string symbol)
+        {
+
         }
     }
 }

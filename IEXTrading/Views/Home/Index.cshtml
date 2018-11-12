@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Top Five";
 }
 
 <h2>IEX Trading Application</h2>
@@ -19,6 +19,10 @@
         The quote can also be saved in the local database.
         <br />
         The <a asp-area="" asp-controller="Home" asp-action="Refresh">Refresh</a> tab let's you refresh the local database, that is, remove all its contents.
+        <br />
+        <a asp-area="" asp-controller="Home" asp-action="Top5">Top Five</a> 
+        <br />
+        <a asp-area="" asp-controller="Home" asp-action="Strategy">Strategy</a> 
     </p>
     <p>
         Following learning objectives are fulfilled -

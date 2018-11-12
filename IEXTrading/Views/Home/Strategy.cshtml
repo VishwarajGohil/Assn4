@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewData["Title"] = "Strategy";
+}
+
+<h2>Strategy</h2>
+
+<div>
+    <p>
+        Strategy Applied for Picking Up Stocks
+        We have defined the below rules to select Stocks from IEX trading platform which are as follows-:
+        •	To Select Stock our first criteria is Revenue Per Share. It is defined as total revenue per share over a designated period. We are extracting this information from Https Request: /stock/aapl/stats.
+        •	Our Second Criteria is Return on Equity. It is calculated by dividing net income by shareholders' equity. We are extracting this information from Https Request: /stock/aapl/stats.
+        •	Our Third Criteria is Price to Earnings Ratio (PE ratio). It is calculated by ratio of latest Price to latest EPS. We have gathered information from Https Request: /stock/aapl/stats. To Calculate the PE ratio, we have introduced a function called CalculatePriceToEarnings.
+        •	Then we sorted the extracted stock information revenue per share, Return on Equity, Price To Earnings Ratio in descending order.
+        Using these criteria’s, we sorted and displayed the top 5 stocks.
+    </p>
+</div>

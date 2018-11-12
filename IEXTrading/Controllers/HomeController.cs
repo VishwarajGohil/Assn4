@@ -168,5 +168,95 @@ namespace MVCTemplate.Controllers
             return new CompaniesEquities(companies, equities.Last(), dates, prices, volumes, avgprice, avgvol);
         }
 
+        public IActionResult Top5()
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+
+            CompanyDetails temp = new CompanyDetails();
+
+            decimal _PTE = 0;
+
+            List<CompanyDetails> tempList = new List<CompanyDetails>();
+
+            List<CompanyDetails> _model = new List<CompanyDetails>();
+
+            //temp = GetCompanyDetails("AAAU");
+
+            if (companies!=null)
+            {
+                foreach(var item in companies)
+                {
+                    temp = GetCompanyDetails(item.symbol);
+                    if(temp!=null)
+                    {
+                        _PTE = CalculatePriceToEarnings(temp.latestPrice, temp.latestEPS);
+                        temp.PTE = _PTE;
+                        tempList.Add(temp);
+                    }
+                }
+            }
+
+            if(tempList.Count!=0)
+            {
+                _model = tempList.OrderByDescending(x => x.revenuePerShare).ThenByDescending(x => x.returnOnEquity).ThenByDescending(x => x.PTE).ToList();
+            }
+            
+
+            if(_model!=null)
+            {
+                if(_model.Count<5)
+                {
+                    return View(_model);
+                }
+                else
+                {
+                    return View(_model.GetRange(0, 5));
+                }
+            }
+            else
+            {
+                return View(null);
+            }
+
+        }
+
+        public decimal CalculatePriceToEarnings(decimal latestPrice, decimal latestEPS)
+        {
+            if(latestEPS!=0)
+            {
+                return (latestPrice/latestEPS);
+            }
+            else
+            {
+                return 0;
+            }
+
+
+        }
+
+        public CompanyDetails GetCompanyDetails(string symbol)
+        {
+
+            CompanyDetails _cd = new CompanyDetails();
+            if (symbol != null)
+            {
+                IEXHandler webHandler = new IEXHandler();
+
+                _cd =  webHandler.GetAll(symbol);
+                webHandler = new IEXHandler();
+
+                decimal _latestPrice = webHandler.GetLatestPrice(symbol);
+                _cd.latestPrice = _latestPrice;
+
+                //webHandler.GetDividends(symbol);
+            }
+
+            return _cd;
+        }
+
+        public IActionResult Strategy()
+        {
+            return View();
+        }
     }
 }
