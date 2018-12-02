@@ -9,12 +9,15 @@ using IEXTrading.Models;
 using IEXTrading.Models.ViewModel;
 using IEXTrading.DataAccess;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace MVCTemplate.Controllers
 {
     public class HomeController : Controller
     {
         public ApplicationDbContext dbContext;
+        private string SessionKeyName;
+        public int TotalCompanies = 100;
 
         public HomeController(ApplicationDbContext context)
         {
@@ -38,7 +41,11 @@ namespace MVCTemplate.Controllers
             List<Company> companies = webHandler.GetSymbols();
 
             //Save comapnies in TempData
-            TempData["Companies"] = JsonConvert.SerializeObject(companies);
+            //TempData["Companies"] = JsonConvert.SerializeObject(companies);
+
+            String companiesData = JsonConvert.SerializeObject(companies);
+            
+            HttpContext.Session.SetString("CompaniesData", companiesData);
 
             return View(companies);
         }
@@ -83,7 +90,13 @@ namespace MVCTemplate.Controllers
         ****/
         public IActionResult PopulateSymbols()
         {
-            List<Company> companies = JsonConvert.DeserializeObject<List<Company>>(TempData["Companies"].ToString());
+            // reading JSON from the Session
+            string companiesData = HttpContext.Session.GetString("CompaniesData");
+            List<Company> companies = null;
+            if (companiesData != "")
+            {
+                companies = JsonConvert.DeserializeObject<List<Company>>(companiesData);
+            }
             foreach (Company company in companies)
             {
                 //Database will give PK constraint violation error when trying to insert record with existing PK.
@@ -170,69 +183,27 @@ namespace MVCTemplate.Controllers
 
         public IActionResult Top5()
         {
-            List<Company> companies = dbContext.Companies.ToList();
+            //Strategy1();
 
-            CompanyDetails temp = new CompanyDetails();
-
-            decimal _PTE = 0;
-
-            List<CompanyDetails> tempList = new List<CompanyDetails>();
-
-            List<CompanyDetails> _model = new List<CompanyDetails>();
-
-            //temp = GetCompanyDetails("AAAU");
-
-            if (companies!=null)
-            {
-                foreach(var item in companies)
-                {
-                    temp = GetCompanyDetails(item.symbol);
-                    if(temp!=null)
-                    {
-                        _PTE = CalculatePriceToEarnings(temp.latestPrice, temp.latestEPS);
-                        temp.PTE = _PTE;
-                        tempList.Add(temp);
-                    }
-                }
-            }
-
-            if(tempList.Count!=0)
-            {
-                _model = tempList.OrderByDescending(x => x.revenuePerShare).ThenByDescending(x => x.returnOnEquity).ThenByDescending(x => x.PTE).ToList();
-            }
+            //Strategy2();
             
-
-            if(_model!=null)
-            {
-                if(_model.Count<5)
-                {
-                    return View(_model);
-                }
-                else
-                {
-                    return View(_model.GetRange(0, 5));
-                }
-            }
-            else
-            {
-                return View(null);
-            }
+            return View();
 
         }
 
-        public decimal CalculatePriceToEarnings(decimal latestPrice, decimal latestEPS)
-        {
-            if(latestEPS!=0)
-            {
-                return (latestPrice/latestEPS);
-            }
-            else
-            {
-                return 0;
-            }
+        //public decimal CalculatePriceToEarnings(decimal latestPrice, decimal latestEPS)
+        //{
+        //    if(latestEPS!=0)
+        //    {
+        //        return (latestPrice/latestEPS);
+        //    }
+        //    else
+        //    {
+        //        return 0;
+        //    }
 
 
-        }
+        //}
 
         public CompanyDetails GetCompanyDetails(string symbol)
         {
@@ -248,11 +219,187 @@ namespace MVCTemplate.Controllers
                 decimal _latestPrice = webHandler.GetLatestPrice(symbol);
                 _cd.latestPrice = _latestPrice;
 
+                if(_cd!=null&&_cd.latestPrice!=0)
+                {
+                    _cd.PTE = _cd.latestEPS / _cd.latestPrice;
+                    _cd.variance = _cd.week52change / _cd.latestPrice;
+                }
+
                 //webHandler.GetDividends(symbol);
             }
 
             return _cd;
         }
+
+        public IActionResult Strategy2()
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+            companies = companies.GetRange(0, TotalCompanies);
+            CompanyDetails temp = new CompanyDetails();
+            List<CompanyDetails> tempList = new List<CompanyDetails>();
+            List<CompanyDetails> _model = new List<CompanyDetails>();
+
+            if (companies != null)
+            {
+                foreach (var item in companies)
+                {
+                    temp = GetCompanyDetails(item.symbol);
+                    if (temp != null)
+                    {
+                        tempList.Add(temp);
+                    }
+                }
+            }
+
+            if (tempList.Count != 0)
+            {
+                _model = tempList.OrderByDescending(x => x.revenuePerShare).ThenByDescending(x => x.returnOnEquity).ThenByDescending(x => x.PTE).ToList();
+            }
+
+            if (_model != null)
+            {
+                if (_model.Count < 5)
+                {
+                    return View(_model);
+                }
+                else
+                {
+                    return View(_model.GetRange(0, 5));
+                }
+            }
+            else
+            {
+                return View(null);
+            }
+
+        }
+
+        public IActionResult Strategy1()
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+            companies = companies.GetRange(0, TotalCompanies);
+            CompanyDetails temp = new CompanyDetails();
+            List<CompanyDetails> tempList = new List<CompanyDetails>();
+            List<CompanyDetails> _model = new List<CompanyDetails>();
+            bool _flagDividendGiven;
+
+            if (companies != null)
+            {
+                foreach (var item in companies)
+                {
+                    temp = GetCompanyDetails(item.symbol);
+
+                    _flagDividendGiven = IsDividendGiven(item.symbol);
+                    if (temp != null&& _flagDividendGiven)
+                    {
+                        tempList.Add(temp);
+                    }
+                }
+            }
+
+            if (tempList.Count != 0)
+            {
+                _model = tempList.OrderByDescending(x => x.returnOnEquity).ThenByDescending(x => x.variance).ToList();
+            }
+
+            if (_model != null)
+            {
+                if (_model.Count < 5)
+                {
+                    return View(_model);
+                }
+                else
+                {
+                    return View(_model.GetRange(0, 5));
+                }
+            }
+            else
+            {
+                return View(null);
+            }
+
+        }
+
+        public IActionResult BothStrategies()
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+            companies = companies.GetRange(0, TotalCompanies);
+            CompanyDetails temp = new CompanyDetails();
+            List<CompanyDetails> tempList = new List<CompanyDetails>();
+            List<CompanyDetails> _model = new List<CompanyDetails>();
+            bool _flagDividendGiven;
+
+            if (companies != null)
+            {
+                foreach (var item in companies)
+                {
+                    temp = GetCompanyDetails(item.symbol);
+
+                    _flagDividendGiven = IsDividendGiven(item.symbol);
+                    if (temp != null && _flagDividendGiven)
+                    {
+                        tempList.Add(temp);
+                    }
+                }
+            }
+
+            if (tempList.Count != 0)
+            {
+                _model = tempList.OrderByDescending(x => x.returnOnEquity).ThenByDescending(x => x.variance).ToList();
+                _model = _model.OrderByDescending(x => x.revenuePerShare).ThenByDescending(x => x.returnOnEquity).ThenByDescending(x => x.PTE).ToList();
+            }
+
+            if (_model != null)
+            {
+                if (_model.Count < 5)
+                {
+                    return View(_model);
+                }
+                else
+                {
+                    return View(_model.GetRange(0, 5));
+                }
+            }
+            else
+            {
+                return View(null);
+            }
+
+        }
+
+        public bool IsDividendGiven(string symbol)
+        {
+            IEXHandler webHandler = new IEXHandler();
+
+            List<Dividend> _listDiv = webHandler.GetDividends(symbol);
+
+            if(_listDiv.Count!=0)
+            {
+                return _listDiv.Any(x => x.qualified == "Q");
+                
+            }
+
+            return false;
+        }
+
+        //public float GetEPSbySymbol(string symbol)
+        //{
+        //    IEXHandler webHandler = new IEXHandler();
+
+        //    float totalEPS=0;
+
+        //    List<EPS> _listEPS = webHandler.GetEPS(symbol);
+
+        //    if(_listEPS.Count!=0)
+        //    {
+        //        foreach(var item in _listEPS)
+        //        {
+        //            totalEPS += item.actualEPS; 
+        //        }
+        //    }
+
+        //    return totalEPS/4;
+        //}
 
         public IActionResult Strategy()
         {

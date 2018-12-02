@@ -26,6 +26,9 @@ namespace MVCTemplate
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration["Data:IEXTrading:ConnectionString"]));
+            services.AddSession(options => {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+            });
             services.AddMvc();
         }
 
@@ -49,7 +52,11 @@ namespace MVCTemplate
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseSession();
+
             app.UseStaticFiles();
+
+            
 
             app.UseMvc(routes =>
             {
@@ -57,6 +64,8 @@ namespace MVCTemplate
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            //app.UseSession();
         }
     }
 }

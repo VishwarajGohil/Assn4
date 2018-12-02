@@ -5,23 +5,24 @@
 
 <h2>Top5</h2>
 
-@if (Model != null)
-{
-    <div>
-        <p>
-            Symbol  Company Name
-        </p>
-    </div>
-    <br />
-    @foreach (var item in Model)
-    {
-        <div>
-            <p>
-                @item.symbol  @item.companyName
-            </p>
-            
-        </div>
-    }
-}
+
+<div>
+    <p>
+        <a asp-area="" asp-controller="Home" asp-action="Strategy1">Strategy1 </a>
+    </p>
+</div>
+<br />
+<div>
+    <p>
+        <a asp-area="" asp-controller="Home" asp-action="Strategy2">Strategy2 </a> 
+    </p>
+</div>
+<br />
+<div>
+    <p>
+        <a asp-area="" asp-controller="Home" asp-action="BothStrategies">BothStrategies </a>
+    </p>
+</div>
+
 
 

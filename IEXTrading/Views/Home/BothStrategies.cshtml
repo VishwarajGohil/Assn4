@@ -1,0 +1,27 @@
+﻿@model List<IEXTrading.Models.CompanyDetails>
+@{
+    ViewData["Title"] = "BothStrategies";
+}
+
+<h2>BothStrategies</h2>
+
+@if (Model != null)
+{
+    <div>
+        <p>
+            Symbol  CompanyName
+        </p>
+    </div>
+    <br />
+    @foreach (var item in Model)
+    {
+        <div>
+            <p>
+                @item.symbol  @item.companyName
+            </p>
+
+        </div>
+    }
+}
+
+

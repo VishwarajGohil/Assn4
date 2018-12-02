@@ -41,7 +41,8 @@ namespace IEXTrading.Infrastructure.IEXTradingHandler
             if (!companyList.Equals(""))
             {
                 companies = JsonConvert.DeserializeObject<List<Company>>(companyList);
-                companies = companies.GetRange(0, 9);
+                
+                companies = companies.GetRange(0, 4000);
             }
             return companies;
         }
@@ -95,7 +96,7 @@ namespace IEXTrading.Infrastructure.IEXTradingHandler
 
             if (!dividendsList.Equals(""))
             {
-                _listDividend = JsonConvert.DeserializeObject<List<Dividend>>(dividendsList);
+                _listDividend = JsonConvert.DeserializeObject<List<Dividend>>(dividendsList, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 //_listDividend = _listDividend.GetRange(0, 9);
             }
 
@@ -117,11 +118,30 @@ namespace IEXTrading.Infrastructure.IEXTradingHandler
             }
 
             var jsonObject = (JObject)JsonConvert.DeserializeObject(_list);
-            _all.revenuePerShare = (jsonObject.Property("revenuePerShare").Value.ToString().Length==0) ? 0 : Convert.ToDecimal(jsonObject.Property("revenuePerShare").Value.ToString());
-            _all.returnOnEquity = (jsonObject.Property("returnOnEquity").Value.ToString().Length==0) ? 0 : Convert.ToDecimal(jsonObject.Property("returnOnEquity").Value.ToString());
-            
-            _all.latestEPS = (jsonObject.Property("latestEPS").Value.ToString().Length == 0) ? 0 : Convert.ToDecimal(jsonObject.Property("latestEPS").Value.ToString());
-            _all.companyName = (jsonObject.Property("companyName").Value.ToString().Length == 0) ? "" : jsonObject.Property("companyName").Value.ToString();
+
+            if(jsonObject.Property("revenuePerShare")!=null)
+            {
+                _all.revenuePerShare = ((jsonObject.Property("revenuePerShare").Value.ToString().Length == 0) || (jsonObject.Property("revenuePerShare").Value.ToString() == "NaN")) ? 0 : Convert.ToDecimal(jsonObject.Property("revenuePerShare").Value.ToString());
+            }
+            if (jsonObject.Property("returnOnEquity") != null)
+            {
+                _all.returnOnEquity = ((jsonObject.Property("returnOnEquity").Value.ToString().Length == 0) || (jsonObject.Property("returnOnEquity").Value.ToString() == "NaN")) ? 0 : Convert.ToDecimal(jsonObject.Property("returnOnEquity").Value.ToString());
+            }
+            if (jsonObject.Property("latestEPS") != null)
+            {
+                _all.latestEPS = ((jsonObject.Property("latestEPS").Value.ToString().Length == 0) || (jsonObject.Property("latestEPS").Value.ToString() == "NaN")) ? 0 : Convert.ToDecimal(jsonObject.Property("latestEPS").Value.ToString());
+            }
+            if(jsonObject.Property("companyName") != null)
+            {
+                _all.companyName = (jsonObject.Property("companyName").Value.ToString().Length == 0) ? "" : jsonObject.Property("companyName").Value.ToString();
+            }
+            if (jsonObject.Property("week52change") != null)
+            {
+                _all.week52change = ((jsonObject.Property("week52change").Value.ToString().Length == 0)) ? 0 : Convert.ToDecimal(jsonObject.Property("week52change").Value.ToString());
+            }
+
+
+
             _all.symbol = symbol;
 
             return _all;
@@ -159,17 +179,37 @@ namespace IEXTrading.Infrastructure.IEXTradingHandler
             List<EPS> _listEPS = null;
 
             httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+
             HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
             if (response.IsSuccessStatusCode)
             {
                 EPSList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             }
 
-            var jsonObject = (JObject)JsonConvert.DeserializeObject(EPSList);
-            var unashamedohio = (JArray)(jsonObject.Property("earnings").Value);
+            var contentJo = (JObject)JsonConvert.DeserializeObject(EPSList, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            var organizationsJArray = contentJo["earnings"]
+                .Value<JArray>();
+
+            var organizations = organizationsJArray.ToObject<List<EPS>>();
+
+            var _1listEPS = JsonConvert.DeserializeObject<List<EPS>>(EPSList, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+            //if (jsonObject.Property("revenuePerShare") != null)
+            //{
+            //    _listEPS = JsonConvert.DeserializeObject<List<EPS>>(EPSList, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            //}
+
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    EPSList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            //}
+
+            //var jsonObject = (JObject)JsonConvert.DeserializeObject(EPSList);
+            //var unashamedohio = (JArray)(jsonObject.Property("earnings").Value);
 
 
-            List<EPS> listEPS = unashamedohio.ToObject<List<EPS>>();
+            //List<EPS> listEPS = unashamedohio.ToObject<List<EPS>>();
 
             if (!EPSList.Equals(""))
             {
