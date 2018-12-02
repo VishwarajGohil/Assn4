@@ -3,16 +3,31 @@
     ViewData["Title"] = "Strategy";
 }
 
-<h2>Strategy</h2>
+
 
 <div>
-    <p>
-		Strategy Applied for Picking Up Stocks<br />
-        We have defined the below rules to select Stocks from IEX trading platform which are as follows-:<br />
-        •	To Select Stock our first criteria is Revenue Per Share. It is defined as total revenue per share over a designated period. We are extracting this information from Https Request: /stock/aapl/stats.<br />
-        •	Our Second Criteria is Return on Equity. It is calculated by dividing net income by shareholders' equity. We are extracting this information from Https Request: /stock/aapl/stats.<br />
-        •	Our Third Criteria is Price to Earnings Ratio (PE ratio). It is calculated by ratio of latest Price to latest EPS. We have gathered information from Https Request: /stock/aapl/stats. To Calculate the PE ratio, we have introduced a function called CalculatePriceToEarnings.<br />
-        •	Then we sorted the extracted stock information revenue per share, Return on Equity, Price To Earnings Ratio in descending order.<br />
-        Using these criteria’s, we sorted and displayed the top 5 stocks.<br />
-    </p>
+	<div class="header">
+		<h3 class="strategyheader"><b>First Strategy</b></h3>
+	</div>
+	<p>
+		We want to select top 5 stocks on the basis of certain conditions in the IEX trading platform.The conditions are as follows:<br />
+		<br/>
+		1)	We are selecting the stocks which gave Dividend in last one year. Companies which are in profit can only give dividends. So, this is one of the selecting criteria for stocks.<br />
+		2)	Another metric to select stock is Return on Equity. Return on Equity is calculated as net income divided by shareholder’s equity.  We can compare the companies which give large returns per equity. FieldName: returnOnEquity <br />
+		3)	Last metric we are looking into is how much is the variance in stock value in last 52 Weeks. This hows how stable is the stock. Lesser the variance more stable stock. This will help us to select more  table stocks in top 5 list. To calculate variance we are using 52 week high and low share values with current share value.<br />
+		Variance = (Week52High – Week52low)/latestPrice
+		<br />
+	</p>
+	<div class="header">
+		<h3 class="strategyheader"><b>Second Strategy</b></h3>
+	</div>
+	<p>
+	In this Strategy we are using following conditions-:<br />
+		<br/>
+		1)	We want to select top 5 stocks in the IEX trading platform based on various information given on IEX trading API.<br />
+		2)	We are selecting the stocks which gave Dividend in last one year. Companies which are in profit can only give dividends. So, this is one of the selecting criteria for stocks.<br />
+		3)	Another metric to select stock is revenue per share. Revenue per share. Company should have good and increasing revenue per share. FieldName: revenuePerShare<br />
+		4)	Another metric to select stock is return on Equity. Return on equity is calculated as net income divided by shareholder’s equity.  We can compare the companies which give large returns per equity. FieldName: returnOnEquity<br />
+	</p>
+
 </div>

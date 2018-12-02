@@ -3,38 +3,23 @@
 	ViewData["Title"] = "Top5";
 }
 
-<h2>Top5</h2>
-<table class="table">
-	<thead>
-		<tr>
-			<th>
-				Symbol
-			</th>
-			<th>
-				Name
-			</th>
-				
-		</tr>
-	</thead>
+<h2>Top Five Stocks</h2>
 
-	<tbody>
 
-		@if (Model != null)
-		{
-			
-			@foreach (var item in Model)
-			{
-		<tr>
-			<td>
-				@item.symbol
-			</td>
-			<td>
-				@item.companyName
-			</td>
+<div>
+	<a  asp-area="" asp-controller="Home" asp-action="Strategy1">First Strategy</a>
+	
+</div>
+<br />
+<div>
+	<p>
+		<a asp-area="" asp-controller="Home" asp-action="Strategy2">Second Strategy</a>
+	</p>
+</div>
+<br />
+<div>
+	<p>
+		<a asp-area="" asp-controller="Home" asp-action="BothStrategies">BothStrategies</a>
+	</p>
+</div>
 
-		</tr>				
-			
-			}
-		}
-</tbody>
-</table>

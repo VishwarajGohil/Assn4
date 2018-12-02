@@ -42,7 +42,7 @@ namespace IEXTrading.Infrastructure.IEXTradingHandler
             {
                 companies = JsonConvert.DeserializeObject<List<Company>>(companyList);
                 
-                companies = companies.GetRange(0, 4000);
+                companies = companies.GetRange(0, 100);
             }
             return companies;
         }

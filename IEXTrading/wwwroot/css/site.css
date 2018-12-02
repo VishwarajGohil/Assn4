@@ -5,15 +5,29 @@
 }
 
 .nav-bar {
-    background-color: #006747;
-    color: #CFC493;
-    font-size: x-large;
+	background-color: #006747;
+	color: #CFC493;
+	font-size: x-large;
+	width: 100%;
+	margin-top: -10px;
+	margin-left: -15px;
+	padding-left: 30px;
+	position: static;
+	height: 10%;
+	overflow: auto;
 }
 
-.nav-bar > a {
-    text-decoration: none;
-    color: inherit;
-}
+	.nav-bar > a {
+		text-decoration: none;
+		color: inherit;
+		text-align: center;
+		top: 50px;
+		float: left;
+		padding: 12px;
+		width: 14%;
+		text-align: center;
+		font: 20px;
+	}
 
 	.nav-bar > a:hover {
 		background-color: ghostwhite;
@@ -26,4 +40,25 @@ td {
 table {
     border-spacing: 10px;
     border-collapse: separate;
+}
+.footer {
+	position: absolute;
+	left: 0;
+	bottom:0;
+	width: 100%;
+	background-color: #006747;
+	color: white;
+	text-align: center;
+}
+.header {
+	width: 100%;
+	background-color: black;
+	margin-left: -15px;
+	padding-left: 30px;
+	color: white;
+	
+}
+
+.strategyheader {
+	text-align:center;
 }
